@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Topology Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+*{box-sizing:border-box} body{margin:0}
+/* Layout: a notebook-page stage on a cool desk; controls, live steps and exam phrasing in a side column */
+:root{
+  --desk:#DCE4E6; --paper:#FFFFFF; --ink:#26363B; --muted:#62757A; --teal:#1F4E56; --aqua:#4C9FA8;
+  --pale:#C9E3E5; --cream:#F4EEE2; --amber:#E0A33A; --amber-ink:#9A6410; --red:#B5543C; --green:#3F7660;
+  --line:#B8C6C9; --dot:#E2E9EB; --on-teal:#FFFFFF; --hot:#E0A33A;
+  --display: Cambria, Caladea, Georgia, "Times New Roman", serif;
+  --body: Calibri, Carlito, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#0F1D20; --paper:#172A2E; --ink:#E4ECED; --muted:#93A6AA; --teal:#8CCAD1; --aqua:#5FB3BC;
+    --pale:#24434A; --cream:#2E3530; --amber:#EDB04A; --amber-ink:#F2C066; --red:#E07A62; --green:#7DBB9C;
+    --line:#3C5359; --dot:#22383C; --on-teal:#0F1D20; --hot:#EDB04A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#0F1D20; --paper:#172A2E; --ink:#E4ECED; --muted:#93A6AA; --teal:#8CCAD1; --aqua:#5FB3BC;
+  --pale:#24434A; --cream:#2E3530; --amber:#EDB04A; --amber-ink:#F2C066; --red:#E07A62; --green:#7DBB9C;
+  --line:#3C5359; --dot:#22383C; --on-teal:#0F1D20; --hot:#EDB04A; color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4}
+.wrap{max-width:1400px;margin:0 auto;padding-block:16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-family:var(--display);font-size:1.7rem;margin:0;color:var(--teal);text-wrap:balance}
+.sub{color:var(--muted);font-size:.95rem}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{font:inherit;font-weight:700;font-size:1rem;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--paper);color:var(--teal);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
+.tab small{font-weight:400;opacity:.75;margin-left:4px}
+.tab:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--paper);border-radius:10px;border:1px solid var(--line);padding:12px 14px 8px;min-width:0;
+  background-image:radial-gradient(var(--dot) 1.2px, transparent 1.3px);background-size:22px 22px}
+.stage-head{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.stage-head h2{font-family:var(--display);font-size:1.35rem;margin:0;color:var(--teal)}
+.stage-head p{margin:0;color:var(--ink);flex:1 1 320px;min-width:0}
+.chip{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:var(--amber);color:#fff;vertical-align:middle}
+svg#net{width:100%;height:auto;display:block;touch-action:manipulation}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.panel h3{margin:0 0 8px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--amber-ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label{font-weight:700;color:var(--teal)}
+select{font:inherit;font-weight:700;font-size:1.05rem;padding:5px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink)}
+button.act{font:inherit;font-weight:700;padding:9px 14px;border-radius:8px;border:none;background:var(--teal);color:var(--on-teal);cursor:pointer}
+button.act.amber{background:var(--amber);color:#1F2A2D}
+button.act.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--line)}
+button.act[aria-pressed="true"]{background:var(--red);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+.hint{font-size:.85rem;color:var(--muted);margin:6px 0 0}
+input[type=range]{accent-color:var(--amber);width:120px}
+ol#steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;min-height:3em}
+ol#steps li{padding-left:2px}
+ol#steps li.bad{color:var(--red);font-weight:700}
+ol#steps li.good{color:var(--green);font-weight:700}
+.empty{color:var(--muted);font-style:italic;list-style:none;margin-left:-1.3em}
+.read{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-variant-numeric:tabular-nums}
+.read dt{color:var(--muted)} .read dd{margin:0;font-weight:700}
+table.mac{border-collapse:collapse;width:100%;font-size:.92rem}
+table.mac th,table.mac td{border:1px solid var(--line);padding:3px 6px;text-align:left}
+table.mac th{background:var(--teal);color:var(--on-teal)}
+table.mac td.m{font-family:var(--mono);font-size:.85rem}
+table.mac tr.hit td{background:var(--amber);color:#1F2A2D;font-weight:700}
+ul.exam{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+/* svg */
+.lk{stroke:var(--aqua);stroke-width:3.5;stroke-linecap:round;fill:none;transition:stroke .2s}
+.lk.bb{stroke:var(--teal);stroke-width:7}
+.lk.hot{stroke:var(--hot);stroke-width:6}
+.lk.bb.hot{stroke-width:9}
+.lk.cut{stroke:var(--red);stroke-dasharray:8 7;stroke-width:3}
+.hit{stroke:transparent;stroke-width:24;fill:none}
+.cutmode .hit{cursor:crosshair}
+.cutmode .hit:hover + .lk, .cutmode .hit:hover{stroke:rgba(181,84,60,.25)}
+.xmark{stroke:var(--red);stroke-width:4;stroke-linecap:round}
+.pad{fill:var(--paper)}
+.icon path{fill:none;stroke:var(--teal);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.nlabel{font-family:var(--body);font-weight:700;font-size:17px;fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--paper);stroke-width:6px;stroke-linejoin:round}
+.small{font-family:var(--body);font-size:12px;fill:var(--muted);text-anchor:middle;paint-order:stroke;stroke:var(--paper);stroke-width:5px}
+.dev{cursor:pointer}
+.dev.down .icon path{stroke:var(--line)}
+.dev.down .nlabel{fill:var(--muted)}
+.dev .ringsel{fill:none;stroke:transparent;stroke-width:3}
+.dev.from .ringsel{stroke:var(--amber)}
+.dev.to .ringsel{stroke:var(--green);stroke-dasharray:5 4}
+.box{fill:var(--teal)} .box.hub{fill:var(--aqua)}
+.boxtxt{font-family:var(--body);font-weight:700;font-size:15px;fill:var(--on-teal);text-anchor:middle}
+.port{fill:var(--amber)}
+.term{fill:var(--amber)}
+.pkt rect{fill:var(--amber)} .pkt text{font-family:var(--body);font-weight:700;font-size:13px;fill:#1F2A2D;text-anchor:middle}
+.pkt.bad rect{fill:var(--red)} .pkt.bad text{fill:#fff}
+.pkt.b2 rect{fill:var(--aqua)} .pkt.b2 text{fill:#fff}
+.mk rect{rx:11} .mk text{font-family:var(--body);font-weight:700;font-size:13px;text-anchor:middle}
+.mk.ok rect{fill:var(--green)} .mk.ok text{fill:#fff}
+.mk.no rect{fill:var(--dot);stroke:var(--line)} .mk.no text{fill:var(--muted)}
+.mk.bad rect{fill:var(--red)} .mk.bad text{fill:#fff}
+.mk.pass rect{fill:var(--pale)} .mk.pass text{fill:var(--teal)}
+.burst{fill:none;stroke:var(--red);stroke-width:4}
+.bursttxt{font-family:var(--body);font-weight:700;font-size:16px;fill:var(--red);text-anchor:middle}
+@media (prefers-reduced-motion: reduce){ .lk{transition:none} }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Network Topology Lab</h1>
+      <div class="sub">Pick a sender and a receiver, send a packet, then cut cables and see what breaks. 9618 Unit 2.1.</div>
+    </div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+  </header>
+
+  <div class="grid">
+    <section class="stage" aria-live="polite">
+      <div class="stage-head"><h2 id="tname"></h2><p id="tblurb"></p></div>
+      <svg id="net" viewBox="0 0 1000 540" role="img" aria-label="Network diagram"></svg>
+    </section>
+
+    <aside class="side">
+      <div class="panel">
+        <h3>Send a packet</h3>
+        <div class="row">
+          <label for="from">From</label><select id="from"></select>
+          <label for="to">to</label><select id="to"></select>
+          <button class="act amber" id="send">Send</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="act ghost" id="two">Two send at once</button>
+          <button class="act ghost" id="cut" aria-pressed="false">Cut or fail</button>
+          <button class="act ghost" id="reset">Repair all</button>
+        </div>
+        <div class="row" id="meshmode" style="margin-top:8px" hidden>
+          <label><input type="radio" name="mm" value="route" id="mm-route" checked> Routing</label>
+          <label><input type="radio" name="mm" value="flood" id="mm-flood"> Flooding</label>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <label for="speed">Speed</label><input type="range" id="speed" min="0.4" max="2" step="0.1" value="1">
+        </div>
+        <p class="hint" id="hint">Tip: click one device, then another, to send between them. Press Enter to resend.</p>
+      </div>
+
+      <div class="panel">
+        <h3>What just happened</h3>
+        <ol id="steps"><li class="empty">Send a packet to see each step.</li></ol>
+      </div>
+
+      <div class="panel" id="macpanel" hidden>
+        <h3>The switch's address table</h3>
+        <table class="mac" id="mac"></table>
+      </div>
+
+      <div class="panel">
+        <h3>Count it</h3>
+        <dl class="read">
+          <dt>Cables</dt><dd id="r-cables"></dd>
+          <dt>Received by</dt><dd id="r-recv">–</dd>
+          <dt>Accepted by</dt><dd id="r-acc">–</dd>
+          <dt>Link transmissions</dt><dd id="r-tx">–</dd>
+        </dl>
+      </div>
+
+      <div class="panel">
+        <h3>Say it in the exam</h3>
+        <ul class="exam" id="exam"></ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const NS = 'http://www.w3.org/2000/svg';
+const ICON = {
+  pc: ['M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10z','M7 20h10','M9 16v4','M15 16v4'],
+  laptop: ['M3 19l18 0','M5 6m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v8a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z'],
+  server: ['M3 4m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z','M3 12m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z','M7 8l0 .01','M7 16l0 .01'],
+  printer: ['M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2','M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4','M7 13m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z'],
+  router: ['M3 13m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z','M17 17l0 .01','M13 17l0 .01','M15 13l0 -2','M11.75 8.75a4 4 0 0 1 6.5 0','M8.5 6.5a8 8 0 0 1 13 0']
+};
+const DEV = ['A','B','C','D','E','F'];
+const KIND = {A:'pc', B:'laptop', C:'server', D:'pc', E:'printer', F:'laptop'};
+const MAC = {A:'00:1A:2B:4D:5E:A1', B:'00:1A:2B:4D:5E:B7', C:'00:1A:2B:4D:5E:C4', D:'00:1A:2B:4D:5E:D9', E:'00:1A:2B:4D:5E:E2', F:'00:1A:2B:4D:5E:F6'};
+
+const svg = document.getElementById('net');
+const $ = id => document.getElementById(id);
+function el(tag, attrs, parent){ const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const S = { topo:'bus', nodes:{}, links:[], cut:new Set(), failed:new Set(), run:0, busy:false, cutMode:false,
+            pick:null, recv:new Set(), acc:new Set(), tx:0, speed:1 };
+let layers = {};
+
+// ---------------------------------------------------------------- topology definitions
+function ellipse(cx, cy, rx, ry, n, start){ const out=[]; for (let k=0;k<n;k++){ const a=(start - k*360/n)*Math.PI/180; out.push({x:cx+rx*Math.cos(a), y:cy-ry*Math.sin(a)}); } return out; }
+function devNodes(pts, kinds){ const o={}; DEV.forEach((d,i)=>{ o[d]={x:pts[i].x, y:pts[i].y, type:kinds?kinds[d]:KIND[d], label:d}; }); return o; }
+
+const TOPO = {
+  bus: {
+    tab:'Bus', name:'Bus', blurb:'One shared backbone cable with a terminator at each end. Every device is tapped into it.',
+    cables:'1 backbone + 6 drop cables',
+    exam:['The packet is broadcast along the backbone to every device.','Each device checks the destination address in the packet.','Only the device whose address matches accepts it; the others ignore it.','If the backbone breaks, the whole network goes down.','Only one device can send at a time, otherwise there is a collision.'],
+    build(){
+      const xs=[175,305,435,565,695,825], y=275; const n={T1:{x:80,y,type:'term'}, T2:{x:920,y,type:'term'}};
+      DEV.forEach((d,i)=>{ n['t'+d]={x:xs[i],y,type:'tap'}; n[d]={x:xs[i], y:i%2?420:130, type:KIND[d], label:d}; });
+      const seq=['T1',...DEV.map(d=>'t'+d),'T2']; const L=[];
+      for (let i=0;i<seq.length-1;i++) L.push({a:seq[i], b:seq[i+1], kind:'bb'});
+      DEV.forEach(d=>L.push({a:'t'+d, b:d}));
+      return {nodes:n, links:L, seq};
+    },
+    send: busSend, two: busTwo
+  },
+  hub: {
+    tab:'Star', sub:'hub', name:'Star with a hub', blurb:'Each device has its own cable to the centre. A hub cannot read addresses, so it repeats everything to every port.',
+    cables:'6 (one per device)',
+    exam:['The packet is sent to the hub.','The hub sends it out of every port, to every other device.','Each device checks the destination address; only the matching device accepts it.','Physically a star, but logically it behaves like a bus.'],
+    build(){ return starBuild('HUB'); }, send: hubSend, two: hubTwo
+  },
+  sw: {
+    tab:'Star', sub:'switch', name:'Star with a switch', blurb:'Each device has its own cable to the switch. The switch reads the destination address and sends the packet to that device only.',
+    cables:'6 (one per device)', mac:true,
+    exam:['The packet is sent to the switch.','The switch reads the destination (MAC) address in the packet.','It looks the address up in its table to find the right port.','It forwards the packet only to that device, so other devices never receive it.','One cable breaking affects only that device; if the switch fails, the whole network goes down.'],
+    build(){ return starBuild('SWITCH'); }, send: swSend, two: swTwo
+  },
+  mesh: {
+    tab:'Mesh', name:'Mesh', blurb:'Devices are linked to several others, so there is more than one route. The internet is a mesh of routers.',
+    cables:'12 (a full mesh of 6 would need 15)',
+    exam:['There are several routes between devices.','The packet is routed hop by hop along an available route, usually the shortest.','If a link fails, the packet is re-routed another way, so the network keeps working.','Lots of cabling, so expensive and complex to set up.'],
+    build(){
+      const p=ellipse(500,280,330,190,6,90); const n={}; DEV.forEach((d,i)=>{ n[d]={x:p[i].x,y:p[i].y,type:'router',label:d}; });
+      const pairs=[[0,1],[0,2],[0,4],[0,5],[1,2],[1,3],[2,3],[2,4],[3,4],[4,5],[1,5],[3,5]];
+      return {nodes:n, links:pairs.map(([i,j])=>({a:DEV[i], b:DEV[j]}))};
+    },
+    send: meshSend, two:null
+  },
+  ring: {
+    tab:'Ring', bg:true, name:'Ring', blurb:'Each device links to exactly two neighbours. Data travels one way round, passed from device to device.',
+    cables:'6 (one between each pair of neighbours)',
+    exam:['Each device is connected to two neighbours in a closed loop.','Data travels round the ring in one direction.','Each device checks the address and passes the data on if it is not the destination.','One break or one failed device can stop the whole ring.'],
+    build(){
+      const p=ellipse(500,275,300,180,6,90); const n=devNodes(p); const L=[];
+      for (let i=0;i<6;i++) L.push({a:DEV[i], b:DEV[(i+1)%6]});
+      return {nodes:n, links:L};
+    },
+    send: ringSend, two:null
+  },
+  hybrid: {
+    tab:'Hybrid', name:'Hybrid: stars on a bus backbone', blurb:'Three star networks, each with its own switch, joined by a bus backbone. Most real campuses look like this.',
+    cables:'1 backbone + 3 switch links + 6 device cables', mac:true,
+    exam:['A hybrid is a mixture of two or more topologies, here stars joined by a bus.','Inside a star the switch sends the packet straight to the device.','Between stars the packet travels along the backbone to every switch; only the switch with the destination forwards it.','A backbone break cuts the stars off from each other, but each star still works on its own.'],
+    build(){
+      const y=150, xs=[220,500,780]; const n={T1:{x:80,y,type:'term'}, T2:{x:920,y,type:'term'}}; const L=[];
+      xs.forEach((x,k)=>{ n['t'+k]={x,y,type:'tap'}; n['S'+k]={x,y:270,type:'SWITCH',label:'switch '+(k+1)}; });
+      const seq=['T1','t0','t1','t2','T2']; for (let i=0;i<4;i++) L.push({a:seq[i], b:seq[i+1], kind:'bb'});
+      xs.forEach((x,k)=>L.push({a:'t'+k, b:'S'+k}));
+      DEV.forEach((d,i)=>{ const k=Math.floor(i/2); n[d]={x:xs[k]+(i%2?95:-95), y:430, type:KIND[d], label:d}; L.push({a:'S'+k, b:d}); });
+      return {nodes:n, links:L, seq};
+    },
+    send: hybridSend, two:null
+  }
+};
+function starBuild(kind){
+  const p=ellipse(500,280,330,195,6,90); const n=devNodes(p); n.X={x:500,y:280,type:kind,label:kind.toLowerCase()};
+  return {nodes:n, links:DEV.map(d=>({a:'X', b:d}))};
+}
+
+// ---------------------------------------------------------------- drawing
+function draw(){
+  svg.innerHTML='';
+  layers = { links:el('g',{},svg), nodes:el('g',{},svg), marks:el('g',{},svg), pk:el('g',{},svg) };
+  S.links.forEach((lk,i)=>{
+    const a=S.nodes[lk.a], b=S.nodes[lk.b]; lk.id=i;
+    const g=el('g',{},layers.links);
+    const hit=el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'hit'},g);
+    lk.el=el('line',{x1:a.x,y1:a.y,x2:b.x,y2:b.y,class:'lk'+(lk.kind==='bb'?' bb':'')},g);
+    lk.xg=el('g',{},g);
+    hit.addEventListener('click',()=>{ if(S.cutMode && !S.busy){ toggleCut(lk); } });
+  });
+  for (const id in S.nodes){
+    const n=S.nodes[id]; n.id=id;
+    const g=el('g',{transform:`translate(${n.x},${n.y})`},layers.nodes); n.g=g;
+    if (n.type==='tap'){ continue; }
+    if (n.type==='term'){ el('rect',{x:-6,y:-17,width:12,height:34,rx:2,class:'term'},g); el('text',{x:0,y:36,class:'small'},g).textContent='terminator'; continue; }
+    if (n.type==='SWITCH'||n.type==='HUB'){
+      el('rect',{x:-50,y:-20,width:100,height:40,rx:9,class:'box'+(n.type==='HUB'?' hub':'')},g);
+      for (let k=0;k<6;k++) el('rect',{x:-40+k*14.5,y:10,width:6,height:5,class:'port'},g);
+      el('text',{x:0,y:4,class:'boxtxt'},g).textContent=n.label;
+      g.classList.add('dev'); n.isBox=true;
+    } else {
+      g.classList.add('dev');
+      el('circle',{r:36,class:'ringsel'},g);
+      el('rect',{x:-27,y:-27,width:54,height:54,rx:10,class:'pad'},g);
+      const ic=el('g',{class:'icon',transform:'translate(-22,-22) scale(1.8333)'},g);
+      (ICON[n.type]||ICON.pc).forEach(d=>el('path',{d},ic));
+      el('text',{x:0,y:48,class:'nlabel'},g).textContent=n.label;
+    }
+    n.xg=el('g',{},g);
+    g.addEventListener('click',()=>nodeClick(id));
+  }
+  S.links.forEach(lk=>paintLink(lk));
+  for (const id in S.nodes) paintNode(id);
+  svg.classList.toggle('cutmode',S.cutMode);
+}
+function paintLink(lk){
+  const c=S.cut.has(lk.id); lk.el.classList.toggle('cut',c); lk.xg.innerHTML='';
+  if (c){ const a=S.nodes[lk.a], b=S.nodes[lk.b]; const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    el('line',{x1:mx-11,y1:my-11,x2:mx+11,y2:my+11,class:'xmark'},lk.xg); el('line',{x1:mx-11,y1:my+11,x2:mx+11,y2:my-11,class:'xmark'},lk.xg); }
+}
+function paintNode(id){
+  const n=S.nodes[id]; if(!n.g||!n.xg) return; const f=S.failed.has(id);
+  n.g.classList.toggle('down',f); n.xg.innerHTML='';
+  if (f){ el('line',{x1:-20,y1:-20,x2:20,y2:20,class:'xmark'},n.xg); el('line',{x1:-20,y1:20,x2:20,y2:-20,class:'xmark'},n.xg); }
+  n.g.classList.toggle('from', S.pick===id || (!S.pick && $('from').value===id && DEV.includes(id) && S.showSel));
+  n.g.classList.toggle('to', !S.pick && $('to').value===id && DEV.includes(id) && S.showSel);
+}
+function clearMarks(){ layers.marks.innerHTML=''; layers.pk.innerHTML=''; S.links.forEach(l=>l.el.classList.remove('hot')); }
+function mark(id, kind, text){
+  const n=S.nodes[id]; const old=layers.marks.querySelector(`[data-n="${id}"]`); if(old) old.remove();
+  const w=Math.max(64, text.length*7.6+18); const dy=n.isBox?-40:-50;
+  const g=el('g',{class:'mk '+kind,'data-n':id,transform:`translate(${n.x},${n.y+dy})`},layers.marks);
+  el('rect',{x:-w/2,y:-12,width:w,height:23,rx:11},g); el('text',{x:0,y:4},g).textContent=text;
+}
+function burst(x,y,text){
+  const g=el('g',{},layers.marks); const c=el('circle',{cx:x,cy:y,r:6,class:'burst'},g);
+  el('text',{x,y:y-34,class:'bursttxt'},g).textContent=text;
+  const t0=performance.now(); const run=S.run;
+  return new Promise(res=>{ (function f(t){ if(run!==S.run){res();return;} const k=Math.min(1,(t-t0)/(700/S.speed)); c.setAttribute('r',6+26*k); if(k<1) requestAnimationFrame(f); else res(); })(t0); });
+}
+
+// ---------------------------------------------------------------- state helpers
+function L(a,b){ return S.links.find(l=>(l.a===a&&l.b===b)||(l.a===b&&l.b===a)); }
+const isCut = lk => lk && S.cut.has(lk.id);
+const down = id => S.failed.has(id);
+function toggleCut(lk){ S.cut.has(lk.id)?S.cut.delete(lk.id):S.cut.add(lk.id); paintLink(lk); clearMarks(); }
+function nodeClick(id){
+  if (S.busy) return;
+  const n=S.nodes[id];
+  if (S.cutMode){ if(n.type==='tap'||n.type==='term') return; S.failed.has(id)?S.failed.delete(id):S.failed.add(id); paintNode(id); clearMarks(); return; }
+  if (!DEV.includes(id)) return;
+  if (!S.pick){ S.pick=id; S.showSel=false; $('from').value=id; refreshSel(); }
+  else if (S.pick!==id){ $('from').value=S.pick; $('to').value=id; S.pick=null; S.showSel=true; refreshSel(); doSend(); }
+}
+function refreshSel(){ for (const id in S.nodes) paintNode(id); }
+
+// ---------------------------------------------------------------- log and readouts
+function resetLog(){ $('steps').innerHTML=''; S.recv=new Set(); S.acc=new Set(); S.tx=0; readout(); }
+function log(text, cls){ const li=document.createElement('li'); li.textContent=text; if(cls) li.className=cls; $('steps').appendChild(li); }
+function readout(){
+  $('r-cables').textContent=TOPO[S.topo].cables;
+  $('r-recv').textContent=S.recv.size?`${S.recv.size}: ${[...S.recv].sort().join(' ')}`:'–';
+  $('r-acc').textContent=S.acc.size?[...S.acc].join(' '):'–';
+  $('r-tx').textContent=S.tx?String(S.tx):'–';
+}
+function got(id, ok){ if(DEV.includes(id)) S.recv.add(id); if(ok) S.acc.add(id); readout(); }
+
+// ---------------------------------------------------------------- animation
+function pos(p){ return typeof p==='string'? S.nodes[p] : p; }
+function go(path, label, cls){
+  const run=S.run; const pts=path.map(pos);
+  const segs=[]; let total=0;
+  for (let i=0;i<pts.length-1;i++){ const d=Math.hypot(pts[i+1].x-pts[i].x, pts[i+1].y-pts[i].y); segs.push(d); total+=d; }
+  const g=el('g',{class:'pkt'+(cls?' '+cls:'')},layers.pk);
+  const w=Math.max(46,label.length*8+14); el('rect',{x:-w/2,y:-12,width:w,height:24,rx:12},g); el('text',{x:0,y:5},g).textContent=label;
+  const sp=(reduced?1400:240)*S.speed; const t0=performance.now(); let lastSeg=-1;
+  const hot=k=>{ if(typeof path[k]==='string'&&typeof path[k+1]==='string'){ const lk=L(path[k],path[k+1]); if(lk&&cls!=='bad') lk.el.classList.add('hot'); } };
+  return new Promise(res=>{
+    if (total===0){ g.remove(); res(); return; }
+    (function step(t){
+      if (run!==S.run){ g.remove(); res(); return; }
+      let d=Math.min(total,(t-t0)/1000*sp); let k=0, acc=0;
+      while (k<segs.length-1 && acc+segs[k]<d){ acc+=segs[k]; k++; }
+      if (k!==lastSeg){ hot(k); lastSeg=k; }
+      const f=segs[k]?(d-acc)/segs[k]:1; const x=pts[k].x+(pts[k+1].x-pts[k].x)*f, y=pts[k].y+(pts[k+1].y-pts[k].y)*f;
+      g.setAttribute('transform',`translate(${x},${y})`);
+      if (d<total) requestAnimationFrame(step); else { g.remove(); res(); }
+    })(t0);
+  });
+}
+const wait = ms => new Promise(r=>{ const run=S.run; setTimeout(()=>r(run===S.run), reduced?60:ms/S.speed); });
+const stale = run => run!==S.run;
+
+// ---------------------------------------------------------------- bus
+async function busSend(f,t){
+  const run=S.run, seq=S.extra.seq;
+  log(`${f} puts the packet on the backbone, addressed to ${t}.`);
+  if (down(f)){ mark(f,'bad','failed'); log(`${f} has failed, so it cannot send. The other devices are not affected.`,'bad'); return; }
+  if (isCut(L('t'+f,f))){ mark(f,'bad','cable cut'); log(`${f}'s own drop cable is cut, so only ${f} is cut off.`,'bad'); return; }
+  await go([f,'t'+f], 'to '+t); if(stale(run)) return;
+  log('The signal spreads along the backbone in both directions.');
+  let broken=false, heard=false; const jobs=[]; const i0=seq.indexOf('t'+f);
+  const deliver=async d=>{
+    if (isCut(L('t'+d,d))||down(d)) return;
+    await go(['t'+d,d],'to '+t); if(stale(run)) return;
+    if(!heard){ heard=true; log('Every device on the bus receives the packet and checks the destination address.'); }
+    if (d===t){ mark(d,'ok','accepted'); got(d,true); } else { mark(d,'no','ignored'); got(d,false); }
+  };
+  const spread=async dir=>{
+    for (let i=i0;;i+=dir){ const j=i+dir; if(j<0||j>=seq.length) return;
+      const lk=L(seq[i],seq[j]);
+      if (isCut(lk)){ broken=true; const a=S.nodes[seq[i]], b=S.nodes[seq[j]]; const m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        await go([seq[i],m,seq[i]],'reflects','bad'); return; }
+      S.tx++; await go([seq[i],seq[j]],'to '+t); if(stale(run)) return;
+      if (seq[j].startsWith('t')) jobs.push(deliver(seq[j].slice(1)));
+    }
+  };
+  await Promise.all([spread(-1),spread(1)]); await Promise.all(jobs); if(stale(run)) return; readout();
+  if (broken){
+    log('The backbone is broken. The cut end has no terminator, so the signal reflects back and corrupts the data.','bad');
+    log('Result: the whole bus network goes down.','bad');
+    DEV.forEach(d=>{ if(d!==f) mark(d,'bad','corrupted'); }); S.acc.clear(); readout(); return;
+  }
+  if (S.acc.has(t)) log(`Only ${t}'s address matches, so ${t} accepts the packet. All the others ignore it.`,'good');
+  else log(`${t} never received it: its cable is cut or it has failed. Every other device still works.`,'bad');
+  log('The terminators at both ends absorb the signal so it does not bounce back.');
+}
+async function busTwo(f,t){
+  const run=S.run, seq=S.extra.seq;
+  const idx=DEV.indexOf(f); const g=DEV[idx<3?5:0]; const h=DEV.find(d=>d!==g&&d!==f&&d!==t)||t;
+  log(`${f} sends to ${t} and, at the same moment, ${g} sends to ${h}.`);
+  const a=S.nodes['t'+f], b=S.nodes['t'+g]; const mid={x:(a.x+b.x)/2, y:a.y};
+  await Promise.all([go([f,'t'+f],'to '+t), go([g,'t'+g],'to '+h,'b2')]); if(stale(run)) return;
+  log('Both signals travel along the same shared backbone.');
+  const path=(from)=>{ const out=[from]; const i=seq.indexOf(from), dir=S.nodes[from].x<mid.x?1:-1; for(let k=i+dir;k>0&&k<seq.length-1;k+=dir){ const n=seq[k]; if((dir>0&&S.nodes[n].x>=mid.x)||(dir<0&&S.nodes[n].x<=mid.x)) break; out.push(n);} out.push(mid); return out; };
+  await Promise.all([go(path('t'+f),'to '+t), go(path('t'+g),'to '+h,'b2')]); if(stale(run)) return;
+  await burst(mid.x,mid.y,'collision');
+  log('The two signals collide on the backbone and both packets are corrupted.','bad');
+  DEV.forEach(d=>mark(d,'bad','corrupted'));
+  log('Only one device can transmit at a time on a bus. Ethernet handles this with CSMA/CD (Part B).');
+}
+
+// ---------------------------------------------------------------- star with hub
+function other(f,t){ const i=DEV.indexOf(f); for (const k of [3,2,4,1,5]){ const g=DEV[(i+k)%6]; if(g!==t) return g; } return DEV[(i+1)%6]; }
+async function hubSend(f,t){
+  const run=S.run;
+  log(`${f} sends the packet to the hub, addressed to ${t}.`);
+  if (down(f)){ mark(f,'bad','failed'); log(`${f} has failed. Only ${f} is affected.`,'bad'); return; }
+  if (isCut(L('X',f))){ mark(f,'bad','cable cut'); log(`${f}'s cable is cut, so only ${f} is cut off.`,'bad'); return; }
+  S.tx++; await go([f,'X'],'to '+t); if(stale(run)) return;
+  if (down('X')){ mark('X','bad','failed'); log('The hub has failed, so nothing gets through. The whole network is down.','bad'); return; }
+  log('A hub cannot read addresses, so it repeats the packet out of every other port.');
+  let heard=false;
+  await Promise.all(DEV.filter(d=>d!==f).map(async d=>{
+    if (isCut(L('X',d))||down(d)) return;
+    S.tx++; await go(['X',d],'to '+t); if(stale(run)) return;
+    if(!heard){ heard=true; log('Every device receives it and checks the destination address.'); }
+    if (d===t){ mark(d,'ok','accepted'); got(d,true); } else { mark(d,'no','ignored'); got(d,false); }
+  })); if(stale(run)) return; readout();
+  if (S.acc.has(t)) log(`Only ${t} accepts it. Physically this is a star, but logically it behaves like a bus.`,'good');
+  else log(`${t} never received it, but every other device still works.`,'bad');
+}
+async function hubTwo(f,t){
+  const run=S.run; const g=other(f,t); const h=DEV.find(d=>d!==g&&d!==f&&d!==t)||t;
+  log(`${f} sends to ${t} and, at the same moment, ${g} sends to ${h}.`);
+  await Promise.all([go([f,'X'],'to '+t), go([g,'X'],'to '+h,'b2')]); if(stale(run)) return;
+  const x=S.nodes.X; await burst(x.x,x.y,'collision');
+  log('Both packets reach the hub together. It repeats both onto every port, so they collide and are corrupted.','bad');
+  DEV.forEach(d=>mark(d,'bad','corrupted'));
+  log('Try the same thing on the switch tab.');
+}
+
+// ---------------------------------------------------------------- star with switch
+function macTable(ids, hit){
+  const rows=ids.map((d,i)=>`<tr data-d="${d}"${d===hit?' class="hit"':''}><td>${i+1}</td><td>${d}</td><td class="m">${MAC[d]}</td></tr>`).join('');
+  $('mac').innerHTML=`<tr><th>port</th><th>device</th><th>MAC address</th></tr>${rows}`;
+}
+async function swSend(f,t){
+  const run=S.run; macTable(DEV,null);
+  log(`${f} sends the packet to the switch, addressed to ${t}.`);
+  if (down(f)){ mark(f,'bad','failed'); log(`${f} has failed. Only ${f} is affected.`,'bad'); return; }
+  if (isCut(L('X',f))){ mark(f,'bad','cable cut'); log(`${f}'s cable is cut, so only ${f} is cut off.`,'bad'); return; }
+  S.tx++; await go([f,'X'],'to '+t); if(stale(run)) return;
+  if (down('X')){ mark('X','bad','failed'); log('The switch has failed, so nothing gets through. The whole network is down.','bad'); return; }
+  log(`The switch reads the destination MAC address in the packet: ${MAC[t]}.`);
+  if(!(await wait(700))) return;
+  macTable(DEV,t); log(`It looks the address up in its table: ${t} is on port ${DEV.indexOf(t)+1}.`);
+  if(!(await wait(700))) return;
+  if (isCut(L('X',t))||down(t)){ mark(t,'bad','unreachable'); log(`${t}'s cable is cut or ${t} has failed, so the packet cannot be delivered. Only ${t} is affected.`,'bad'); return; }
+  log(`It forwards the packet out of port ${DEV.indexOf(t)+1} only.`);
+  S.tx++; await go(['X',t],'to '+t); if(stale(run)) return;
+  mark(t,'ok','accepted'); got(t,true);
+  log(`${t} accepts it. No other device received the packet: less traffic, fewer collisions, more secure.`,'good');
+}
+async function swTwo(f,t){
+  const run=S.run; macTable(DEV,null);
+  const g=other(f,t); const h=DEV.find(d=>d!==g&&d!==f&&d!==t)||t;
+  log(`${f} sends to ${t} and, at the same moment, ${g} sends to ${h}.`);
+  await Promise.all([go([f,'X'],'to '+t), go([g,'X'],'to '+h,'b2')]); if(stale(run)) return;
+  log('Each device has its own full-duplex cable to the switch, so the two packets never share a cable. No collision.','good');
+  if(!(await wait(600))) return;
+  log('The switch looks up both addresses and forwards each packet to its own destination.');
+  await Promise.all([go(['X',t],'to '+t), go(['X',h],'to '+h,'b2')]); if(stale(run)) return;
+  mark(t,'ok','accepted'); mark(h,'ok','accepted'); got(t,true); got(h,true); S.tx=4; readout();
+}
+
+// ---------------------------------------------------------------- mesh
+function neighbours(id, intact){ return S.links.filter(l=>(l.a===id||l.b===id)&&(intact||!isCut(l))).map(l=>l.a===id?l.b:l.a).filter(n=>intact||!down(n)); }
+function bfs(f,t,intact){ const prev={[f]:null}; const q=[f]; while(q.length){ const c=q.shift(); if(c===t) break; for(const n of neighbours(c,intact)) if(!(n in prev)){ prev[n]=c; q.push(n);} } if(!(t in prev)) return null; const p=[]; for(let c=t;c!==null;c=prev[c]) p.unshift(c); return p; }
+async function meshSend(f,t){
+  const run=S.run;
+  if (down(f)){ mark(f,'bad','failed'); log(`${f} has failed, so it cannot send.`,'bad'); return; }
+  if (down(t)){ mark(t,'bad','failed'); log(`${t} has failed, so it cannot receive.`,'bad'); return; }
+  if ($('mm-flood').checked) return meshFlood(f,t,run);
+  const ideal=bfs(f,t,true), path=bfs(f,t,false);
+  log(`${f} has a packet for ${t}. There are several possible routes.`);
+  if (!path){ mark(t,'bad','unreachable'); log(`Every route from ${f} to ${t} is broken. The packet cannot be delivered.`,'bad'); return; }
+  if (path.join()!==ideal.join()) log(`The usual route (${ideal.join(' → ')}) is broken, so the packet is re-routed.`,'bad');
+  log(`Route chosen: ${path.join(' → ')} (${path.length-1} hop${path.length>2?'s':''}).`);
+  for (let i=0;i<path.length-1;i++){
+    S.tx++; readout(); await go([path[i],path[i+1]],'to '+t); if(stale(run)) return;
+    if (path[i+1]!==t) mark(path[i+1],'pass','passes it on');
+  }
+  mark(t,'ok','accepted'); got(t,true);
+  log(`${t} receives it. Each link is a dedicated point-to-point link, so there is no shared cable and no collision.`,'good');
+}
+async function meshFlood(f,t,run){
+  log(`${f} floods the packet: every router sends it to all its neighbours, except the one it came from.`);
+  const seen=new Set([f]); let level=[[f,null]]; let reached=false; const best=bfs(f,t,false);
+  while(level.length){
+    const next=[];
+    await Promise.all(level.flatMap(([n,from])=>neighbours(n,false).filter(m=>m!==from).map(async m=>{
+      S.tx++; readout(); await go([n,m],'to '+t); if(stale(run)) return;
+      if(!seen.has(m)){ seen.add(m); next.push([m,n]); if(m===t){ reached=true; mark(t,'ok','accepted'); got(t,true);} else mark(m,'pass','copy'); }
+    })));
+    if(stale(run)) return; level=next;
+  }
+  if(reached) log(`${t} receives it, but flooding used ${S.tx} link transmissions. A routed packet needed ${best?best.length-1:'–'}.`,'good');
+  else { mark(t,'bad','unreachable'); log(`${t} cannot be reached by any route.`,'bad'); }
+  log('Flooding needs no routing logic, but it loads the network with unnecessary copies.');
+}
+
+// ---------------------------------------------------------------- ring
+async function ringSend(f,t){
+  const run=S.run;
+  log(`${f} sends the packet to its neighbour. Data goes one way round the ring.`);
+  if (down(f)){ mark(f,'bad','failed'); log(`${f} has failed. In a simple ring that breaks the loop for everyone.`,'bad'); return; }
+  let cur=f;
+  while(cur!==t){
+    const nxt=DEV[(DEV.indexOf(cur)+1)%6]; const lk=L(cur,nxt);
+    if (isCut(lk)||down(nxt)){ const a=S.nodes[cur], b=S.nodes[nxt]; await go([cur,{x:(a.x+b.x)/2,y:(a.y+b.y)/2}],'to '+t,'bad'); if(stale(run)) return;
+      mark(t,'bad','never arrives'); log(`The ring is broken between ${cur} and ${nxt}. The data cannot get past, so ${t} never receives it.`,'bad'); return; }
+    S.tx++; readout(); await go([cur,nxt],'to '+t); if(stale(run)) return;
+    if (nxt!==t){ mark(nxt,'pass','not mine, pass on'); got(nxt,false); if(S.recv.size===1) log('Each device checks the address. If the packet is not for it, it passes it on to the next device.'); }
+    cur=nxt;
+  }
+  mark(t,'ok','accepted'); got(t,true);
+  log(`${t}'s address matches, so ${t} keeps the packet.`,'good');
+  log('Older rings passed a token round: only the device holding it could send, so there were no collisions.');
+}
+
+// ---------------------------------------------------------------- hybrid
+async function hybridSend(f,t){
+  const run=S.run, seq=S.extra.seq; const sw=d=>'S'+Math.floor(DEV.indexOf(d)/2); const sf=sw(f), st=sw(t);
+  const ids=DEV.filter(d=>sw(d)===sf); macTable(ids,null);
+  log(`${f} sends the packet to its own switch, addressed to ${t}.`);
+  if (down(f)){ mark(f,'bad','failed'); log(`${f} has failed. Only ${f} is affected.`,'bad'); return; }
+  if (isCut(L(sf,f))){ mark(f,'bad','cable cut'); log(`${f}'s cable is cut, so only ${f} is cut off.`,'bad'); return; }
+  S.tx++; await go([f,sf],'to '+t); if(stale(run)) return;
+  if (down(sf)){ mark(sf,'bad','failed'); log('This star\'s switch has failed, so this star is down. The other stars carry on.','bad'); return; }
+  const deliverFrom=async (s)=>{
+    if (isCut(L(s,t))||down(t)){ mark(t,'bad','unreachable'); log(`${t}'s cable is cut or ${t} has failed. Only ${t} is affected.`,'bad'); return; }
+    S.tx++; await go([s,t],'to '+t); if(stale(run)) return; mark(t,'ok','accepted'); got(t,true);
+  };
+  if (sf===st){
+    macTable(ids,t); log(`${t} is on the same star, so the switch sends it straight to ${t}. The backbone is not used.`);
+    await deliverFrom(sf); if(S.acc.has(t)) log(`${t} accepts it.`,'good'); return;
+  }
+  log(`${t} is not in this switch's table, so the switch sends the packet up to the backbone.`);
+  const tap='t'+sf.slice(1);
+  if (isCut(L(tap,sf))){ log('The cable from this switch to the backbone is cut. This star is isolated, but still works on its own.','bad'); mark(t,'bad','unreachable'); return; }
+  S.tx++; await go([sf,tap],'to '+t); if(stale(run)) return;
+  log('On the backbone it behaves like a bus: the signal reaches every switch.');
+  let broken=false; const jobs=[]; const i0=seq.indexOf(tap);
+  const atSwitch=async (tp)=>{ const s='S'+tp.slice(1); if(isCut(L(tp,s))||down(s)) return;
+    S.tx++; await go([tp,s],'to '+t); if(stale(run)) return;
+    if (s===st){ mark(s,'pass','forwards it'); log(`Switch ${Number(s.slice(1))+1} has ${t} on one of its ports, so it forwards the packet to ${t} only.`); await deliverFrom(s); }
+    else mark(s,'no','not here, discards');
+  };
+  const spread=async dir=>{ for(let i=i0;;i+=dir){ const j=i+dir; if(j<0||j>=seq.length) return; const lk=L(seq[i],seq[j]);
+      if(isCut(lk)){ broken=true; const a=S.nodes[seq[i]], b=S.nodes[seq[j]]; await go([seq[i],{x:(a.x+b.x)/2,y:a.y},seq[i]],'reflects','bad'); return; }
+      S.tx++; await go([seq[i],seq[j]],'to '+t); if(stale(run)) return; if(seq[j].startsWith('t')) jobs.push(atSwitch(seq[j])); } };
+  await Promise.all([spread(-1),spread(1)]); await Promise.all(jobs); if(stale(run)) return; readout();
+  if (broken){ ['S0','S1','S2'].forEach(s=>{ if(s!==sf) mark(s,'bad','corrupted'); }); S.acc.clear(); readout();
+    log('The backbone is broken, so traffic between the stars is corrupted and lost.','bad');
+    log('Each star still works on its own: try sending between two devices on the same switch.'); return; }
+  if (S.acc.has(t)) log(`${t} accepts it. Devices on the other stars never saw the packet.`,'good');
+}
+
+// ---------------------------------------------------------------- controls
+function setTopo(k){
+  S.run++; S.busy=false; S.topo=k; S.cut=new Set(); S.failed=new Set(); S.pick=null; S.showSel=false;
+  const T=TOPO[k]; const b=T.build(); S.nodes=b.nodes; S.links=b.links; S.extra=b;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', x.dataset.k===k?'true':'false'));
+  $('tname').innerHTML=T.name+(T.bg?' <span class="chip">background</span>':'');
+  $('tblurb').textContent=T.blurb;
+  $('exam').innerHTML=T.exam.map(x=>`<li>${x}</li>`).join('');
+  $('macpanel').hidden=!T.mac; if(T.mac) macTable(k==='hybrid'?['A','B']:DEV,null);
+  $('meshmode').hidden=(k!=='mesh');
+  $('two').disabled=!T.two; $('two').title=T.two?'':'Not needed here: no shared cable';
+  draw(); $('steps').innerHTML='<li class="empty">Send a packet to see each step.</li>'; S.recv=new Set(); S.acc=new Set(); S.tx=0; readout();
+  try{ localStorage.setItem('ntl-topo',k); }catch(e){}
+}
+async function doSend(two){
+  const f=$('from').value, t=$('to').value;
+  if (f===t){ resetLog(); log('Pick two different devices.','bad'); return; }
+  S.run++; S.busy=true; setButtons(); clearMarks(); resetLog(); S.showSel=true; refreshSel();
+  const T=TOPO[S.topo]; const run=S.run;
+  try { await (two?T.two(f,t):T.send(f,t)); } catch(e){ console.error(e); }
+  if (run===S.run){ S.busy=false; setButtons(); readout(); }
+}
+function setButtons(){ $('send').disabled=S.busy; $('two').disabled=S.busy||!TOPO[S.topo].two; $('cut').disabled=S.busy; $('reset').disabled=false; }
+
+function init(){
+  const tabs=$('tabs');
+  Object.entries(TOPO).forEach(([k,T])=>{ const b=document.createElement('button'); b.className='tab'; b.setAttribute('role','tab'); b.dataset.k=k;
+    b.innerHTML=T.tab+(T.sub?`<small>${T.sub}</small>`:'')+(T.bg?'<small>background</small>':''); b.addEventListener('click',()=>setTopo(k)); tabs.appendChild(b); });
+  ['from','to'].forEach((id,i)=>{ const s=$(id); DEV.forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; s.appendChild(o); }); s.value=i?'D':'A';
+    s.addEventListener('change',()=>{ S.pick=null; S.showSel=true; refreshSel(); }); });
+  $('send').addEventListener('click',()=>doSend(false));
+  $('two').addEventListener('click',()=>doSend(true));
+  $('cut').addEventListener('click',()=>{ S.cutMode=!S.cutMode; $('cut').setAttribute('aria-pressed',String(S.cutMode)); svg.classList.toggle('cutmode',S.cutMode);
+    $('hint').textContent=S.cutMode?'Click a cable to cut or repair it. Click a device, hub or switch to fail or restore it. Press the button again to go back to sending.':'Tip: click one device, then another, to send between them. Press Enter to resend.'; });
+  $('reset').addEventListener('click',()=>{ const k=S.topo; S.cutMode=false; $('cut').setAttribute('aria-pressed','false'); $('hint').textContent='Tip: click one device, then another, to send between them. Press Enter to resend.'; setTopo(k); });
+  $('speed').addEventListener('input',e=>{ S.speed=parseFloat(e.target.value)||1; });
+  document.querySelectorAll('input[name=mm]').forEach(r=>r.addEventListener('change',()=>{ clearMarks(); }));
+  document.addEventListener('keydown',e=>{ if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT') return;
+    if(e.key==='Enter'&&!S.busy){ e.preventDefault(); doSend(false); }
+    const keys=Object.keys(TOPO); const n=parseInt(e.key,10); if(n>=1&&n<=keys.length) setTopo(keys[n-1]); });
+  let start='bus'; try{ const v=localStorage.getItem('ntl-topo'); if(v&&TOPO[v]) start=v; }catch(e){}
+  setTopo(start); S.showSel=true; refreshSel();
+}
+init();
+})();
+</script>
+
+</body>
+</html>
